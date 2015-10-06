@@ -7,7 +7,7 @@ with open(os.path.join(here, 'README.txt')) as f:
 
 setup(
     name='score.auth',
-    version='0.3.2',
+    version='0.3.3',
     description='Authorization and Authentication for The SCORE Framework',
     long_description=README,
     author='strg.at',
@@ -15,6 +15,8 @@ setup(
     url='http://strg.at',
     keywords='score framework authentication authorization pyramid',
     packages=['score.auth'],
+    namespace_packages=['score'],
+    zip_safe=False,
     license='LGPL',
     classifiers=[
         'Development Status :: 4 - Beta',
@@ -32,7 +34,6 @@ setup(
         'Topic :: Software Development :: Libraries :: Application Frameworks',
     ],
     include_package_data=True,
-    zip_safe=False,
     install_requires=[
         'score.init >= 0.2.2',
         'score.ctx >= 0.2.4',
