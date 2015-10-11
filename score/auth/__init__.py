@@ -103,8 +103,8 @@ def _register_ctx_actor(conf, ctx_conf, auth_conf):
 
 def _register_ctx_permits(conf, ctx_conf, auth_conf):
     def constructor(ctx):
-        def permits(operation, *args):
-            return auth_conf.permits(ctx, operation, *args)
+        def permits(operation, *args, raise_=False):
+            return auth_conf.permits(ctx, operation, *args, raise_=raise_)
         return permits
     ctx_conf.register('permits', constructor)
 
@@ -120,12 +120,12 @@ class ConfiguredAuthModule(ConfiguredModule):
         self.ruleset = ruleset
         self.ctx_member = ctx_member
 
-    def permits(self, ctx, operation, obj):
+    def permits(self, ctx, operation, obj, *, raise_=False):
         """
         A proxy for :meth:`RuleSet.permits` of the configured
         :attr:`ruleset` instance.
         """
-        return self.ruleset.permits(ctx, operation, obj)
+        return self.ruleset.permits(ctx, operation, obj, raise_=raise_)
 
 
 class ActorMixin:
@@ -163,7 +163,7 @@ class RuleSet:
             RuleSet.rules[self.cls][self.operation] = func
             return func
 
-    def permits(self, ctx, operation, obj):
+    def permits(self, ctx, operation, obj, *, raise_=False):
         """
         Checks if given :term:`operation` on an object is allowed by given
         :term:`context`. This is done by using the :term:`rules <rule>` added to
@@ -180,6 +180,8 @@ class RuleSet:
             except StopIteration:
                 warnings.warn('No rules defined for class "%s".' %
                               obj.__class__.__name__)
+                if raise_:
+                    raise NotAuthorized(operation, obj)
                 return False
         try:
             rule = cls_rules[operation]
@@ -187,4 +189,17 @@ class RuleSet:
             warnings.warn('No rule defined for operation "%s".' %
                           operation)
             return False
-        return rule(obj, ctx)
+        result = rule(obj, ctx)
+        if not result and raise_:
+            raise NotAuthorized(operation, obj)
+        return result
+
+
+class NotAuthorized(Exception):
+    """
+    Thrown when the authorization for an operation failed.
+    """
+
+    def __init__(self, operation, args):
+        super().__init__('Context does not permit %s(%s)' %
+                         (operation, ','.join(map(type, args))))
