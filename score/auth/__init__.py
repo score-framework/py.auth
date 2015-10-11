@@ -120,12 +120,12 @@ class ConfiguredAuthModule(ConfiguredModule):
         self.ruleset = ruleset
         self.ctx_member = ctx_member
 
-    def permits(self, ctx, operation, obj, *, raise_=False):
+    def permits(self, ctx, operation, *args, raise_=False):
         """
         A proxy for :meth:`RuleSet.permits` of the configured
         :attr:`ruleset` instance.
         """
-        return self.ruleset.permits(ctx, operation, obj, raise_=raise_)
+        return self.ruleset.permits(ctx, operation, *args, raise_=raise_)
 
 
 class ActorMixin:
@@ -142,57 +142,66 @@ class RuleSet:
     classes.
     """
 
-    rules = {}
+    def __init__(self):
+        self.rules = {}
 
-    class rule:
+    def rule(self, operation, *args):
         """
-        Decorator for adding a :term:`rule` to the :attr:`ruleset
-        <.ConfiguredAuthModule.ruleset>`. If no *operation* is given, the
-        decorator will use the name of the decorated function.
+        Decorator for adding a :term:`rule` to this RuleSet.
+
+        The function can be used in two different ways: Either it directly
+        annotates a function …
+
+        .. code-block:: python
+            @ruleset.rule
+            def sing(ctx):
+                return ctx.actor.name == 'Stephen Hawking'
+
+        … or it defines an operation and a list of argument types, which must
+        match the types of the arguments of the call to :method:`.permits`:
+
+        .. code-block:: python
+
+            @ruleset.rule('rewrite', Song)
+            def rewrite_song(ctx, song):
+                return True  # songs may be rewritten at any time
         """
-
-        def __init__(self, cls, operation=None):
-            self.cls = cls
-            self.operation = operation
-
-        def __call__(self, func):
-            if not self.operation:
-                self.operation = func.__name__
-            if self.cls not in RuleSet.rules:
-                RuleSet.rules[self.cls] = {}
-            RuleSet.rules[self.cls][self.operation] = func
+        if callable(operation):
+            if operation.__name__ not in self.rules:
+                self.rules[operation.__name__] = {}
+            self.rules[operation.__name__][tuple()] = operation
+            return operation
+        def capturer(func):
+            if operation not in self.rules:
+                self.rules[operation] = {}
+            self.rules[operation][args] = func
             return func
+        return capturer
 
-    def permits(self, ctx, operation, obj, *, raise_=False):
+    def permits(self, ctx, operation, *args, raise_=False):
         """
-        Checks if given :term:`operation` on an object is allowed by given
-        :term:`context`. This is done by using the :term:`rules <rule>` added to
-        this :attr:`ruleset <.ConfiguredAuthModule.ruleset>`.
+        Checks if given *operation* is allowed on given *args* in given
+        *context*.
         """
-        log.debug({'operation': operation, 'object': obj})
-        try:
-            cls_rules = self.rules[obj.__class__]
-        except KeyError:
-            try:
-                cls_rules = next(rules
-                                 for cls, rules in self.rules.items()
-                                 if isinstance(obj, cls))
-            except StopIteration:
-                warnings.warn('No rules defined for class "%s".' %
-                              obj.__class__.__name__)
-                if raise_:
-                    raise NotAuthorized(operation, obj)
-                return False
-        try:
-            rule = cls_rules[operation]
-        except KeyError:
-            warnings.warn('No rule defined for operation "%s".' %
-                          operation)
-            return False
-        result = rule(obj, ctx)
-        if not result and raise_:
-            raise NotAuthorized(operation, obj)
-        return result
+        for rule_args, rule_test in self.rules.get(operation, {}).items():
+            if len(args) != len(rule_args):
+                continue
+            for i, arg in enumerate(args):
+                if not isinstance(args[i], rule_args[i]):
+                    break
+            else:
+                result = rule_test(ctx, *args)
+                if not result and raise_:
+                    raise NotAuthorized(operation, args)
+                log.debug({'operation': operation,
+                           'args': args,
+                           'result': result})
+                return result
+        warnings.warn('No rules defined for operation "%s(%s)"' %
+                      (operation, ','.join(map(str, map(type, args)))))
+        if raise_:
+            raise NotAuthorized(operation, args)
+        return False
 
 
 class NotAuthorized(Exception):
@@ -202,4 +211,4 @@ class NotAuthorized(Exception):
 
     def __init__(self, operation, args):
         super().__init__('Context does not permit %s(%s)' %
-                         (operation, ','.join(map(type, args))))
+                         (operation, ','.join(map(str, map(type, args)))))
