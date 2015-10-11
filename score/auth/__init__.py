@@ -104,8 +104,7 @@ def _register_ctx_actor(conf, ctx_conf, auth_conf):
 def _register_ctx_permits(conf, ctx_conf, auth_conf):
     def constructor(ctx):
         def permits(operation, *args):
-            actor = getattr(ctx, conf['ctx.member'])
-            return auth_conf.permits(actor, operation, *args)
+            return auth_conf.permits(ctx, operation, *args)
         return permits
     ctx_conf.register('permits', constructor)
 
@@ -121,12 +120,12 @@ class ConfiguredAuthModule(ConfiguredModule):
         self.ruleset = ruleset
         self.ctx_member = ctx_member
 
-    def permits(self, actor, operation, obj):
+    def permits(self, ctx, operation, obj):
         """
         A proxy for :meth:`RuleSet.permits` of the configured
         :attr:`ruleset` instance.
         """
-        return self.ruleset.permits(actor, operation, obj)
+        return self.ruleset.permits(ctx, operation, obj)
 
 
 class ActorMixin:
@@ -164,13 +163,13 @@ class RuleSet:
             RuleSet.rules[self.cls][self.operation] = func
             return func
 
-    def permits(self, actor, operation, obj):
+    def permits(self, ctx, operation, obj):
         """
-        Checks if an :term:`actor` is allowed to perform an :term:`operation`
-        to an object by using the :term:`rules <rule>` added to the
-        :attr:`ruleset <.ConfiguredAuthModule.ruleset>`.
+        Checks if given :term:`operation` on an object is allowed by given
+        :term:`context`. This is done by using the :term:`rules <rule>` added to
+        this :attr:`ruleset <.ConfiguredAuthModule.ruleset>`.
         """
-        log.debug({'actor': actor, 'operation': operation, 'object': obj})
+        log.debug({'operation': operation, 'object': obj})
         try:
             cls_rules = self.rules[obj.__class__]
         except KeyError:
@@ -188,4 +187,4 @@ class RuleSet:
             warnings.warn('No rule defined for operation "%s".' %
                           operation)
             return False
-        return rule(obj, actor)
+        return rule(obj, ctx)
