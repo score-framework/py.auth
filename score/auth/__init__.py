@@ -86,10 +86,7 @@ def _register_ctx_actor(conf, ctx_conf, auth_conf):
     def constructor(ctx):
         return auth_conf.authenticator.retrieve(ctx)
     def destructor(ctx, old, exception):
-        try:
-            new = getattr(ctx, conf['ctx.member'])
-        except AttributeError:
-            new = None
+        new = getattr(ctx, conf['ctx.member'], None)
         if new != old:
             auth_conf.authenticator.store(ctx, new)
     ctx_conf.register(conf['ctx.member'], constructor, destructor)
@@ -108,7 +105,7 @@ def _register_ctx_permits(conf, ctx_conf, auth_conf):
     def constructor(ctx):
         def permits(operation, *args):
             actor = getattr(ctx, conf['ctx.member'])
-            return ctx_conf.permits(actor, operation, *args)
+            return auth_conf.permits(actor, operation, *args)
         return permits
     ctx_conf.register('permits', constructor)
 
