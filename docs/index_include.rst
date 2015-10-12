@@ -1,10 +1,6 @@
-.. module:: score.kvcache
+.. module:: score.auth
 .. role:: faint
 .. role:: confkey
-
-.. py:module:: score.auth
-
-.. _sqlalchemy: http://docs.sqlalchemy.org/en/latest/
 
 **********
 score.auth
@@ -57,22 +53,36 @@ A typical chain of Authenticators could look like the following:
 RuleSets
 ========
 
-The :class:`.RuleSet` is a helper for organizing :term:`rules <rule>`. The
-decorator :class:`.RuleSet.rule` accepts a class and an :term:`operation`
-adding the decorated :term:`rule` to the instanciated RuleSet. Usually one uses
-:term:`permissions <permission>` inside a :term:`rule` definition.
-
-The following generates a ruleset with a rule for testing whether someone is
-allowed to sing a song:
+The :class:`.RuleSet` is a decorator for defining :term:`rules <rule>`. A rule
+consists of an operation and any number of `type` objects, like the following:
 
 .. code-block:: python
 
     ruleset = score.auth.RuleSet()
 
-    @ruleset.rule(Song, 'sing')
-    def sing(song, actor):
-        return song.performer == actor and \
+    @ruleset.rule('sing', Song)
+    def sing(ctx, song):
+        return song.performer == ctx.actor and \
             Permission.SING_A_SONG in actor.permissions
+
+Whenever the context is queried whether it is possible to sing a specific Song,
+this function will be invoked to provide the answer:
+
+.. code-block:: python
+
+    if ctx.permits('sing', Song.load('Galaxy Song')):
+        # this must be Stephen Hawking!
+
+It is also possible to omit the parameters to the decorator, if the rule does
+not require any objects:
+
+.. code-block:: python
+
+    ruleset = score.auth.RuleSet()
+
+    @ruleset.rule  # NOTE: no definitions here ..
+    def sing(ctx):  # .. and no additional function parameters
+        pass
 
 
 Complete Example
@@ -158,7 +168,8 @@ above.
         return a_song.performer == actor and \
             Permission.SING_A_SONG in actor.permissions
 
-    ruleset.permits(stephen, 'sing', galaxy_song)  # True
+    # ... init score and load a context ...
+    ctx.permits('sing', galaxy_song)  # True if ctx.actor is stephen
 
 In this example the :term:`actor` *Stephen Hawking* is performer of the
 *Galaxy Song*. We defined a :term:`rule` allowing an :term:`actor` that is
@@ -167,6 +178,7 @@ it. The decorator ``my_rulset.rule`` adds the decorated function
 ``sing_song`` to the :attr:`RuleSet.rules` of the instanced :class:`RuleSet`
 ``my_ruleset``. We then ask if *Stephen Hawking* is allowed to sing the
 *Galaxy Song*. According to our implementation the :term:`actor` is allowed to.
+
 
 Mixins
 ======
@@ -178,6 +190,7 @@ Mixins
         A list of permissions generated from the attribute *permissions* of
         the associated :term:`groups <group>`. It assumes that the mixed
         class implements a *groups* attribute.
+
 
 Configuration
 =============
@@ -207,6 +220,7 @@ Configuration
 .. autoclass:: score.auth.authenticator.NullAuthenticator
 
 .. autoclass:: score.auth.authenticator.SessionAuthenticator
+
 
 Pyramid Integration
 ===================

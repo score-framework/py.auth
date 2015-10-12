@@ -153,12 +153,14 @@ class RuleSet:
         annotates a function …
 
         .. code-block:: python
+
             @ruleset.rule
             def sing(ctx):
                 return ctx.actor.name == 'Stephen Hawking'
 
         … or it defines an operation and a list of argument types, which must
-        match the types of the arguments of the call to :method:`.permits`:
+        match the types of the arguments of the call to
+        :meth:`.RuleSet.permits`:
 
         .. code-block:: python
 
