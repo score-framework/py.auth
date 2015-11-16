@@ -24,6 +24,7 @@
 # the discretion of STRG.AT GmbH also the competent court, in whose district the
 # Licensee has his registered seat, an establishment or assets.
 
+from collections import OrderedDict
 import logging
 from score.init import (
     ConfiguredModule, parse_dotted_path, parse_call, parse_list)
@@ -170,12 +171,12 @@ class RuleSet:
         """
         if callable(operation):
             if operation.__name__ not in self.rules:
-                self.rules[operation.__name__] = {}
+                self.rules[operation.__name__] = OrderedDict()
             self.rules[operation.__name__][tuple()] = operation
             return operation
         def capturer(func):
             if operation not in self.rules:
-                self.rules[operation] = {}
+                self.rules[operation] = OrderedDict()
             self.rules[operation][args] = func
             return func
         return capturer
