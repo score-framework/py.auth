@@ -41,7 +41,7 @@ defaults = {
 }
 
 
-def init(confdict, ctx_conf):
+def init(confdict, ctx):
     """
     Initializes this module acoording to :ref:`our module initialization
     guidelines <module_initialization>` with the following configuration keys:
@@ -72,25 +72,25 @@ def init(confdict, ctx_conf):
         assert not conf['authenticators']
         conf['authenticators'] = [conf['authenticator']]
         del conf['authenticator']
-    auth_conf = ConfiguredAuthModule(ruleset, conf['ctx.member'])
+    auth = ConfiguredAuthModule(ruleset, conf['ctx.member'])
     authenticator = NullAuthenticator()
     for line in reversed(parse_list(conf['authenticators'])):
-        authenticator = parse_call(line, (auth_conf, authenticator))
-    auth_conf.authenticator = authenticator
-    _register_ctx_actor(conf, ctx_conf, auth_conf)
-    _register_ctx_permits(conf, ctx_conf, auth_conf)
-    return auth_conf
+        authenticator = parse_call(line, (auth, authenticator))
+    auth.authenticator = authenticator
+    _register_ctx_actor(conf, ctx, auth)
+    _register_ctx_permits(conf, ctx, auth)
+    return auth
 
 
-def _register_ctx_actor(conf, ctx_conf, auth_conf):
+def _register_ctx_actor(conf, ctx, auth):
 
     def constructor(ctx):
-        return auth_conf.authenticator.retrieve(ctx)
+        return auth.authenticator.retrieve(ctx)
 
     def destructor(ctx, old, exception):
         new = getattr(ctx, conf['ctx.member'], None)
         if new != old:
-            auth_conf.authenticator.store(ctx, new)
+            auth.authenticator.store(ctx, new)
 
     def actor_persister(ctx):
         def persist():
@@ -98,19 +98,19 @@ def _register_ctx_actor(conf, ctx_conf, auth_conf):
                 new = getattr(ctx, conf['ctx.member'])
             except AttributeError:
                 new = None
-            auth_conf.authenticator.store(ctx, new)
+            auth.authenticator.store(ctx, new)
         return persist
 
-    ctx_conf.register(conf['ctx.member'], constructor, destructor)
-    ctx_conf.register('persist_' + conf['ctx.member'], actor_persister)
+    ctx.register(conf['ctx.member'], constructor, destructor)
+    ctx.register('persist_' + conf['ctx.member'], actor_persister)
 
 
-def _register_ctx_permits(conf, ctx_conf, auth_conf):
+def _register_ctx_permits(conf, ctx, auth):
     def constructor(ctx):
         def permits(operation, *args, raise_=False):
-            return auth_conf.permits(ctx, operation, *args, raise_=raise_)
+            return auth.permits(ctx, operation, *args, raise_=raise_)
         return permits
-    ctx_conf.register('permits', constructor)
+    ctx.register('permits', constructor)
 
 
 class ConfiguredAuthModule(ConfiguredModule):
