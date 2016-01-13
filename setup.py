@@ -14,7 +14,7 @@ setup(
     author_email='support@strg.at',
     url='http://strg.at',
     keywords='score framework authentication authorization pyramid',
-    packages=['score.auth'],
+    packages=['score', 'score.auth'],
     namespace_packages=['score'],
     zip_safe=False,
     license='LGPL',
