@@ -34,7 +34,8 @@ class ActorMixin:
 
     @property
     def permissions(self):
-        return list(set([permission for group in self.groups
+        return list(set([permission
+                         for group in self.groups
                          for permission in group.permissions]))
 
 __all__ = ('init', 'ConfiguredAuthModule', 'RuleSet', 'ActorMixin',
