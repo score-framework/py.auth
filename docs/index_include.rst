@@ -11,8 +11,8 @@ Introduction
 
 This module provides authentication ("who are you?") and authorization ("are
 you allowed to do this?") for your application. The former is implemented with
-the use of so-called :class:`Authenticators`, the latter with a clever workflow
-for defining and probing rules.
+the use of so-called :class:`Authenticators <.Authenticator>`, the latter with
+a clever workflow for defining and probing rules.
 
 
 ActorMixin
@@ -220,11 +220,3 @@ Configuration
 .. autoclass:: score.auth.authenticator.NullAuthenticator
 
 .. autoclass:: score.auth.authenticator.SessionAuthenticator
-
-
-Pyramid Integration
-===================
-
-.. code-block:: python
-
-.. autoclass:: score.auth.pyramid.LoginAuthenticator
