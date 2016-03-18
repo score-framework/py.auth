@@ -88,6 +88,7 @@ class SessionAuthenticator(Authenticator):
     def _dump(self, actor):
         if self.dbcls is None:
             return pickle.dumps(actor)
+        assert actor.id, "Actor has no id, missing call to session.flush()?"
         return actor.id
 
     def _load(self, ctx, data):
