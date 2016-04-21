@@ -74,7 +74,7 @@ class SessionAuthenticator(Authenticator):
         self.dbcls = actor_class
 
     def retrieve(self, ctx):
-        if self.session_key in ctx.session:
+        if self.session_key in ctx.session and ctx.session[self.session_key]:
             return self._load(ctx, ctx.session[self.session_key])
         return self.next.retrieve(ctx)
 
