@@ -29,5 +29,7 @@ from ._init import init, ConfiguredAuthModule
 from .authenticator import (
     Authenticator, NullAuthenticator, SessionAuthenticator)
 
+__version__ = '0.5.4'
+
 __all__ = ('init', 'ConfiguredAuthModule', 'RuleSet',
            'Authenticator', 'NullAuthenticator', 'SessionAuthenticator')
