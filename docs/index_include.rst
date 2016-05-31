@@ -22,6 +22,7 @@ Add this module to your initialization list and configure it to make use of the
 database):
 
 .. code-block:: ini
+    :emphasize-lines: 4,5,7-9
 
     [score.init]
     modules =
@@ -62,6 +63,7 @@ Create a rule set for authorization queries and add some rules:
 The module configuration should point to the given rule set for authorization:
 
 .. code-block:: ini
+    :emphasize-lines: 4
 
     [auth]
     authenticators =
