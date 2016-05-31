@@ -46,16 +46,16 @@ def init(confdict, ctx):
     Initializes this module acoording to :ref:`our module initialization
     guidelines <module_initialization>` with the following configuration keys:
 
-    :confkey:`ruleset` :faint:`[default=RuleSet()]`
+    :confkey:`ruleset` :confdefault:`RuleSet()`
         A dotted path to an instance of :class:`RuleSet` in your project. This
         module will be initialized without any rules, if this configuration key
         is omitted, resulting in denial of every operation.
 
-    :confkey:`authenticators` :faint:`[default=list()]`
+    :confkey:`authenticators` :confdefault:`list()`
         List of :class:`Authenticators` capable of determining the current
         actor.
 
-    :confkey:`ctx.member` :faint:`[default=actor]`
+    :confkey:`ctx.member` :confdefault:`actor`
         The :term:`context member` under which the current actor should be made
         available. Leaving this at its default will allow you to access the
         current actor as the following:
