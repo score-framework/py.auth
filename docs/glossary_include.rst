@@ -12,8 +12,8 @@
         It can be added to different :term:`actors <actor>`.
 
     permission
-        An :ref:`Enumeration <db_enumerations>` allowing :term:`actors <actor>`
-        of a :term:`group` to perform an :term:`operation`. Its job is not to
+        An :class:`Enum <enum.Enum>` allowing :term:`actors <actor>` of a
+        :term:`group` to perform an :term:`operation`. Its job is not to
         implement or execute this :term:`operation`, but to just explain it by
         its definition as concise as possible. A suitable definition for a
         permission could be *open the door* or *write a blog*.
