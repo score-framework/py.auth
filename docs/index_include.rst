@@ -196,7 +196,7 @@ API
 
     .. automethod:: permits
 
-    .. autoclass:: score.auth::RuleSet.rule
+    .. autoclass:: rule
 
 .. autoclass:: score.auth.authenticator.Authenticator
 
