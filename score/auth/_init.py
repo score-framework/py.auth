@@ -89,15 +89,11 @@ def _register_ctx_actor(conf, ctx, auth):
 
     def destructor(ctx, old, exception):
         new = getattr(ctx, conf['ctx.member'], None)
-        if new != old:
-            auth.authenticator.store(ctx, new)
+        auth.authenticator.store(ctx, new)
 
     def actor_persister(ctx):
         def persist():
-            try:
-                new = getattr(ctx, conf['ctx.member'])
-            except AttributeError:
-                new = None
+            new = getattr(ctx, conf['ctx.member'], None)
             auth.authenticator.store(ctx, new)
         return persist
 
