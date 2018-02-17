@@ -7,7 +7,7 @@ with open(os.path.join(here, 'README.rst')) as f:
 
 setup(
     name='score.auth',
-    version='0.6.0',
+    version='0.6.1',
     description='Authorization and Authentication for The SCORE Framework',
     long_description=README,
     author='strg.at',
