@@ -1,4 +1,4 @@
-# Copyright © 2015-2017 STRG.AT GmbH, Vienna, Austria
+# Copyright © 2015-2018 STRG.AT GmbH, Vienna, Austria
 #
 # This file is part of the The SCORE Framework.
 #
@@ -29,7 +29,7 @@ from ._init import init, ConfiguredAuthModule
 from .authenticator import (
     Authenticator, NullAuthenticator, SessionAuthenticator)
 
-__version__ = '0.6.1'
+__version__ = '0.6.2'
 
 __all__ = ('init', 'ConfiguredAuthModule', 'RuleSet',
            'Authenticator', 'NullAuthenticator', 'SessionAuthenticator')
