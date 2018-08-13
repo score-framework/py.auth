@@ -80,7 +80,10 @@ class SessionAuthenticator(Authenticator):
 
     def store(self, ctx, actor):
         if actor is None:
-            del ctx.session[self.session_key]
+            try:
+                del ctx.session[self.session_key]
+            except KeyError:
+                pass
         else:
             ctx.session[self.session_key] = self._dump(actor)
         self.next.store(ctx, actor)
