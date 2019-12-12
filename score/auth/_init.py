@@ -25,8 +25,10 @@
 # Licensee has his registered seat, an establishment or assets.
 
 import logging
+
 from score.init import (
     ConfiguredModule, parse_dotted_path, parse_call, parse_list)
+
 from .authenticator import NullAuthenticator
 from ._ruleset import RuleSet
 
@@ -82,23 +84,18 @@ def init(confdict, ctx):
     return auth
 
 
-def _register_ctx_actor(conf, ctx, auth):
-
+def _register_ctx_actor(conf, ctx_conf, auth_conf):
     def constructor(ctx):
-        return auth.authenticator.retrieve(ctx)
+        return auth_conf.authenticator.retrieve(ctx)
 
-    def destructor(ctx, old, exception):
-        new = getattr(ctx, conf['ctx.member'], None)
-        auth.authenticator.store(ctx, new)
+    def commit(ctx, old_value, new_value):
+        store = auth_conf.authenticator.store
+        store(ctx, new_value)
+        return lambda: store(ctx, old_value)
 
-    def actor_persister(ctx):
-        def persist():
-            new = getattr(ctx, conf['ctx.member'], None)
-            auth.authenticator.store(ctx, new)
-        return persist
-
-    ctx.register(conf['ctx.member'], constructor, destructor)
-    ctx.register('persist_' + conf['ctx.member'], actor_persister)
+    ctx_conf.register(conf['ctx.member'],
+                      constructor,
+                      commit=commit)
 
 
 def _register_ctx_permits(conf, ctx, auth):

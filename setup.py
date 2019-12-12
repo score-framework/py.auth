@@ -36,6 +36,6 @@ setup(
     include_package_data=True,
     install_requires=[
         'score.init >= 0.3',
-        'score.ctx >= 0.3',
+        'score.ctx >= 0.6, <0.7',
     ],
 )
