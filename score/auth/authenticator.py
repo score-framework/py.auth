@@ -87,10 +87,7 @@ class SessionAuthenticator(Authenticator):
 
     def store(self, ctx, actor):
         if actor is None:
-            try:
-                del ctx.session[self.session_key]
-            except KeyError:
-                pass
+            ctx.session.pop(self.session_key, None)
         else:
             ctx.session[self.session_key] = self._dump(actor)
         self.next.store(ctx, actor)
